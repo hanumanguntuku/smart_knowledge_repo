@@ -1,0 +1,50 @@
+# Smart Knowledge Repository Configuration
+
+# Scraping targets and configuration
+targets:
+  - name: "Leadership Team"
+    url: "https://amzur.com/leadership-team/"
+    type: "profile"
+    priority: 5
+    enabled: true
+    
+  - name: "Team Page"
+    url: "https://example.com/team"
+    type: "profile" 
+    priority: 4
+    enabled: false
+
+# Scraping settings
+scraping:
+  rate_limit_delay: 1.0  # seconds between requests
+  max_concurrent_jobs: 3
+  max_retries: 3
+  retry_delay: 5.0
+  timeout: 30
+  user_agent: "Smart Knowledge Repository Bot 1.0"
+
+# Search configuration
+search:
+  embedding_model: "all-MiniLM-L6-v2"
+  embedding_dimension: 384
+  max_search_results: 50
+  min_similarity_score: 0.1
+  
+# Database configuration
+database:
+  url: "sqlite:///data/profiles.db"
+  echo: false
+  pool_recycle: 3600
+
+# UI configuration
+ui:
+  page_title: "Smart Knowledge Repository"
+  page_icon: "🧠"
+  sidebar_width: 300
+  max_chat_history: 100
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/knowledge_repo.log"

@@ -1,0 +1,39 @@
+# Required packages for Smart Knowledge Repository
+
+# Web framework
+streamlit>=1.28.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Web scraping
+beautifulsoup4>=4.12.0
+aiohttp>=3.8.0
+requests>=2.31.0
+
+# Search and ML
+scikit-learn>=1.3.0
+numpy>=1.24.0
+
+# Data processing
+pandas>=2.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Utilities
+python-dateutil>=2.8.0
+
+# Optional dependencies (placeholder models)
+# For production, uncomment and use real embedding models:
+# sentence-transformers>=2.2.0
+# openai>=1.0.0
+# transformers>=4.30.0
+# torch>=2.0.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Logging
+colorlog>=6.7.0
