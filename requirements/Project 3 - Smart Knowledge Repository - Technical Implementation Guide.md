@@ -58,8 +58,6 @@ None
 ● │ ├── search/
 ● │ │ ├── __init__.py
 ● │ │ ├── vector_search.py
-All rights reserved Copyright 2025 Amzur 3
-
 ● │ │ └── indexing.py
 ● │ ├── services/
 ● │ │ ├── knowledge_service.py

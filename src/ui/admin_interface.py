@@ -147,24 +147,39 @@ class AdminInterface:
                 if target_url:
                     job_id = self.scraping_service.create_scraping_job(target_url, job_type)
                     st.success(f"Created job: {job_id}")
-                    
-                    # Run the job asynchronously (in production, use proper task queue)
-                    with st.spinner("Running scraping job..."):
-                        try:
-                            # This is a simplified approach - in production use Celery or similar
-                            result = asyncio.run(self.scraping_service.run_job(job_id))
-                            
-                            if result['status'] == 'completed':
-                                st.success(f"Job completed successfully!")
-                                if job_type == 'profile':
-                                    st.write(f"Scraped {result.get('profiles_scraped', 0)} profiles")
-                            else:
-                                st.error(f"Job failed: {result.get('error', 'Unknown error')}")
-                                
-                        except Exception as e:
-                            st.error(f"Error running job: {e}")
                 else:
                     st.error("Please enter a target URL")
+            
+            # Quick action for Amzur leadership team
+            st.subheader("⚡ Quick Actions")
+            
+            if st.button("🏢 Scrape Amzur Leadership Team", help="Scrape profiles from amzur.com/leadership-team/"):
+                with st.spinner("Scraping Amzur leadership team..."):
+                    try:
+                        result = asyncio.run(self.scraping_service.scrape_amzur_leadership())
+                        
+                        if result['status'] == 'completed':
+                            profiles_saved = result.get('metadata', {}).get('profiles_saved', 0)
+                            st.success(f"✅ Successfully scraped and saved {profiles_saved} leadership profiles!")
+                            
+                            # Show some details
+                            if result.get('results'):
+                                st.write("**Scraped Profiles:**")
+                                for profile in result['results'][:5]:  # Show first 5
+                                    st.write(f"• {profile.get('name', 'Unknown')} - {profile.get('role', 'No role')}")
+                                
+                                if len(result['results']) > 5:
+                                    st.write(f"... and {len(result['results']) - 5} more")
+                        else:
+                            error_msg = result.get('error_message', 'Unknown error')
+                            st.error(f"❌ Scraping failed: {error_msg}")
+                            
+                    except Exception as e:
+                        st.error(f"❌ Error during scraping: {e}")
+                        self.logger.error(f"Admin scraping error: {e}")
+            
+            if st.button("🔄 Refresh Page"):
+                st.rerun()
         
         with col2:
             st.subheader("📊 Scraping Statistics")

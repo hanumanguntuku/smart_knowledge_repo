@@ -280,6 +280,82 @@ class ScrapingService:
         
         return processed_results
     
+    async def scrape_amzur_leadership(self) -> Dict[str, Any]:
+        """
+        Specialized method to scrape Amzur.com leadership team.
+        
+        Returns:
+            Dictionary with scraping results and metadata
+        """
+        job_id = self.create_scraping_job("https://amzur.com/leadership-team/", "amzur_leadership")
+        job = self.jobs[job_id]
+        
+        job.status = "running"
+        job.started_at = datetime.now()
+        
+        try:
+            async with ProfileScraper() as scraper:
+                # Step 1: Get basic profiles from leadership page
+                self.logger.info("Extracting basic profiles from Amzur leadership page...")
+                basic_profiles = await scraper.scrape_amzur_leadership_team()
+                
+                if not basic_profiles:
+                    job.status = "failed"
+                    job.error_message = "No profiles found on leadership page"
+                    return self.get_job_status(job_id)
+                
+                job.metadata['basic_profiles_found'] = len(basic_profiles)
+                self.logger.info(f"Found {len(basic_profiles)} basic profiles")
+                
+                # Step 2: Enhance profiles with detailed information
+                self.logger.info("Enhancing profiles with detailed information...")
+                enhanced_profiles = await scraper.enhance_profiles_with_details(basic_profiles)
+                
+                job.metadata['enhanced_profiles'] = len(enhanced_profiles)
+                
+                # Step 3: Save to knowledge base
+                saved_profiles = []
+                for profile_data in enhanced_profiles:
+                    try:
+                        # Convert to dictionary format for knowledge service
+                        profile_dict = {
+                            'name': profile_data.name,
+                            'role': profile_data.role,
+                            'bio': profile_data.bio,
+                            'contact': profile_data.contact or {},
+                            'photo_url': profile_data.photo_url,
+                            'source_url': profile_data.url,
+                            'department': profile_data.department or 'Leadership'
+                        }
+                        
+                        # Add to knowledge base
+                        saved_profile = self.knowledge_service.add_profile(profile_dict)
+                        saved_profiles.append(saved_profile)
+                        
+                        self.logger.info(f"Saved profile: {profile_data.name}")
+                        
+                        # Rate limiting between saves
+                        await asyncio.sleep(0.5)
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error saving profile {profile_data.name}: {e}")
+                        continue
+                
+                job.results = saved_profiles
+                job.status = "completed"
+                job.completed_at = datetime.now()
+                job.metadata['profiles_saved'] = len(saved_profiles)
+                
+                self.logger.info(f"Successfully scraped and saved {len(saved_profiles)} Amzur leadership profiles")
+                
+        except Exception as e:
+            job.status = "failed"
+            job.error_message = str(e)
+            job.completed_at = datetime.now()
+            self.logger.error(f"Error in Amzur leadership scraping: {e}")
+        
+        return self.get_job_status(job_id)
+    
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get the status of a scraping job."""
         job = self.jobs.get(job_id)
