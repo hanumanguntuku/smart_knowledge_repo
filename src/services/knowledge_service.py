@@ -212,16 +212,67 @@ class KnowledgeService:
             return []
     
     def get_roles(self) -> List[str]:
-        """Get list of all roles."""
+        """Get all unique roles in the knowledge base."""
         try:
-            with self.db_manager.get_session() as session:
-                profile_repo = ProfileRepository(session)
-                return profile_repo.get_roles()
-                
+            profiles = self.profile_repository.get_all()
+            roles = list(set(profile.role for profile in profiles if profile.role))
+            return sorted(roles)
         except Exception as e:
-            self.logger.error(f"Error getting roles: {e}")
+            print(f"Error getting roles: {e}")
             return []
-    
+
+    def get_profiles_by_role(self, role: str) -> List[Dict[str, Any]]:
+        """Get all profiles with a specific role."""
+        try:
+            profiles = self.profile_repository.get_all()
+            matching_profiles = [
+                profile for profile in profiles 
+                if profile.role and role.lower() in profile.role.lower()
+            ]
+            
+            return [
+                {
+                    'id': profile.id,
+                    'name': profile.name,
+                    'role': profile.role,
+                    'department': profile.department,
+                    'bio': profile.bio,
+                    'contact': profile.contact,
+                    'photo_url': profile.photo_url,
+                    'source_url': profile.source_url
+                }
+                for profile in matching_profiles
+            ]
+        except Exception as e:
+            print(f"Error getting profiles by role '{role}': {e}")
+            return []
+
+    def get_profiles_by_department(self, department: str) -> List[Dict[str, Any]]:
+        """Get all profiles in a specific department."""
+        try:
+            profiles = self.profile_repository.get_all()
+            matching_profiles = [
+                profile for profile in profiles 
+                if profile.department and department.lower() in profile.department.lower()
+            ]
+            
+            return [
+                {
+                    'id': profile.id,
+                    'name': profile.name,
+                    'role': profile.role,
+                    'department': profile.department,
+                    'bio': profile.bio,
+                    'contact': profile.contact,
+                    'photo_url': profile.photo_url,
+                    'source_url': profile.source_url
+                }
+                for profile in matching_profiles
+            ]
+        except Exception as e:
+            print(f"Error getting profiles by department '{department}': {e}")
+            return []
+
     def delete_profile(self, profile_id: str) -> bool:
         """Delete a profile from the knowledge base."""
         try:
